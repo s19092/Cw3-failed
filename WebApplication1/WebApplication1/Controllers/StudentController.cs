@@ -49,7 +49,7 @@ namespace WebApplication1.Controllers
         [HttpGet("{id}")]
         public IActionResult getStudent(int id)
         {
-            return Ok(_dbService.)
+            return Ok(_dbService);
         }
     }
 }
