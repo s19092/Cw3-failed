@@ -49,14 +49,7 @@ namespace WebApplication1.Controllers
         [HttpGet("{id}")]
         public IActionResult getStudent(int id)
         {
-            if(id == 1)
-                return Ok("DZBAN");
-            if (id == 2)
-                return Ok("drugi");
-            if (id == 3)
-                return Ok("trzeci");
-            else
-                return NotFound("Wrong id");
+            return Ok(_dbService.)
         }
     }
 }
