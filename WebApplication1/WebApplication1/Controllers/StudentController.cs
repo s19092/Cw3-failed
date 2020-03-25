@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DAL;
 using WebApplication1.NewFolder;
+using System.Data.SqlClient;
 
 namespace WebApplication1.Controllers
 {
@@ -23,7 +24,9 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public IActionResult getStudents(String orderBy)
         {
-            return Ok(_dbService.GetStudents());
+            String[] col = { "firstname" };
+            return QuerryFor("SELECT * FROM STUDENT", col ,null );
+
         }
 
         [HttpPost]
@@ -46,10 +49,61 @@ namespace WebApplication1.Controllers
             return Ok("Delete succeed " + id);
         }
 
-        [HttpGet("{id}")]
-        public IActionResult getStudent(int id)
+        [HttpGet("{indexNumber}")]
+        public IActionResult getStudent(string indexNumber)
         {
-            return Ok(_dbService);
+            String[] colname = { "IdEnrollment","Semester","IdStudy","StartDate" }; 
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("index",indexNumber);
+            return QuerryFor("SELECT * FROM Enrollment e INNER JOIN Student s ON e.IdEnrollment = s.IdEnrollment"
+                + " WHERE IndexNumber = @index",colname,dict);
+        }
+
+
+        private IActionResult QuerryFor(string querry,string[] colname,Dictionary<string,string> param)
+        {
+
+            string conStrin = "Data Source=db-mssql;Initial Catalog=s19092;Integrated Security=True";
+            var st = new List<string>();
+
+            using (SqlConnection con = new SqlConnection(conStrin))
+            using (SqlCommand com = new SqlCommand())
+            {
+                
+                
+
+
+                com.Connection = con;
+                com.CommandText = querry;
+                if (param != null)
+                {
+
+                    foreach (KeyValuePair<string, string> item in param)
+                        com.Parameters.AddWithValue(item.Key, item.Value);
+                         
+             
+                }
+                con.Open();
+                var dr = com.ExecuteReader();
+                while (dr.Read())
+                {
+                    if (dr[colname[0]] == DBNull.Value)
+                    {
+
+
+                    }
+                    for(int op = 0; op < colname.Length; ++op)
+                        st.Add(colname[op]+"=" +dr[colname[op]].ToString());
+
+
+                }
+                if(st.Count>0)
+                return Ok(st);
+            }
+
+            return NotFound();
+
         }
     }
+
 }
