@@ -25,7 +25,7 @@ namespace WebApplication1.Controllers
         public IActionResult getStudents(String orderBy)
         {
             String[] col = { "firstname" };
-            return QuerryFor("SELECT * FROM STUDENT", col ,null );
+            return QuerryForParam("SELECT * FROM STUDENT", col ,null );
 
         }
 
@@ -52,58 +52,54 @@ namespace WebApplication1.Controllers
         [HttpGet("{indexNumber}")]
         public IActionResult getStudent(string indexNumber)
         {
-            String[] colname = { "IdEnrollment","Semester","IdStudy","StartDate" }; 
-            Dictionary<string, string> dict = new Dictionary<string, string>();
-            dict.Add("index",indexNumber);
-            return QuerryFor("SELECT * FROM Enrollment e INNER JOIN Student s ON e.IdEnrollment = s.IdEnrollment"
-                + " WHERE IndexNumber = @index",colname,dict);
+
+            string querry = "select * from enrollment e inner join student s on e.idenrollment = s.idenrollment where s.IndexNumber = @index;";
+            string[] cols = { "idenrollment", "semester", "idstudy", "startdate" };
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            parameters.Add("index", indexNumber);
+            return QuerryForParam(querry,cols,parameters);
         }
 
 
-        private IActionResult QuerryFor(string querry,string[] colname,Dictionary<string,string> param)
+        private IActionResult QuerryForParam(string querry,string[] columnNames,Dictionary<string,string> parameters)
         {
 
             string conStrin = "Data Source=db-mssql;Initial Catalog=s19092;Integrated Security=True";
-            var st = new List<string>();
+            var list = new List<string>();
 
             using (SqlConnection con = new SqlConnection(conStrin))
             using (SqlCommand com = new SqlCommand())
             {
-                
-                
-
 
                 com.Connection = con;
-                com.CommandText = querry;
-                if (param != null)
-                {
+                com.CommandText =(querry);
 
-                    foreach (KeyValuePair<string, string> item in param)
-                        com.Parameters.AddWithValue(item.Key, item.Value);
-                         
-             
+                if(parameters != null)
+                {
+                    foreach (KeyValuePair<string, string> param in parameters)
+                        com.Parameters.AddWithValue(param.Key, param.Value);
+                
                 }
+
                 con.Open();
-                var dr = com.ExecuteReader();
-                while (dr.Read())
+                SqlDataReader reader = com.ExecuteReader();
+
+                while (reader.Read())
                 {
-                    if (dr[colname[0]] == DBNull.Value)
-                    {
 
-
-                    }
-                    for(int op = 0; op < colname.Length; ++op)
-                        st.Add(colname[op]+"=" +dr[colname[op]].ToString());
-
-
+                    foreach (string col in columnNames)
+                        list.Add("'" + col + "'=" +reader[col].ToString());
                 }
-                if(st.Count>0)
-                return Ok(st);
+
+                if(list.Count > 0)
+                    return Ok(list);
+                return NotFound();
             }
 
-            return NotFound();
 
         }
+
+       
     }
 
 }
