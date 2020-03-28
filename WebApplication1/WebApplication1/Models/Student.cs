@@ -14,6 +14,15 @@ namespace WebApplication1.NewFolder
 
         public String IndexNumber { get; set; }
 
+        public Student(List<string> props)
+        {
+
+            IdStudent = Int32.Parse(props[0]);
+            FirstName = props[1];
+            LastName = props[2];
+            IndexNumber = props[3];
+
+        }
 
     }
 }

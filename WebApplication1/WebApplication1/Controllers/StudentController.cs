@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DAL;
 using WebApplication1.NewFolder;
 using System.Data.SqlClient;
+using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
@@ -25,7 +26,7 @@ namespace WebApplication1.Controllers
         public IActionResult getStudents(String orderBy)
         {
             String[] col = { "firstname" };
-            return QuerryForParam("SELECT * FROM STUDENT", col ,null );
+            return Ok(new Student(QuerryForParam("SELECT * FROM STUDENT", col ,null )));
 
         }
 
@@ -57,11 +58,12 @@ namespace WebApplication1.Controllers
             string[] cols = { "idenrollment", "semester", "idstudy", "startdate" };
             Dictionary<string, string> parameters = new Dictionary<string, string>();
             parameters.Add("index", indexNumber);
-            return QuerryForParam(querry,cols,parameters);
+            Enrollment enrollment = new Enrollment( QuerryForParam(querry,cols,parameters));
+            return Ok(enrollment);
         }
 
 
-        private IActionResult QuerryForParam(string querry,string[] columnNames,Dictionary<string,string> parameters)
+        private List<string> QuerryForParam(string querry,string[] columnNames,Dictionary<string,string> parameters)
         {
 
             string conStrin = "Data Source=db-mssql;Initial Catalog=s19092;Integrated Security=True";
@@ -90,11 +92,8 @@ namespace WebApplication1.Controllers
                     foreach (string col in columnNames)
                         list.Add("'" + col + "'=" +reader[col].ToString());
                 }
-
-                if(list.Count > 0)
-                    return Ok(list);
-                return NotFound();
-            }
+                return (list);
+               }
 
 
         }
